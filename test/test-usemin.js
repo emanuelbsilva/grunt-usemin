@@ -230,6 +230,33 @@ describe('usemin', function () {
     assert.ok(changed.match('<a href="foo.html"></a>'));
   });
 
+  it('should not replace assets if replaceAssets option is set to false', function() {
+    grunt.file.mkdir('images');
+    grunt.file.write('images/image.2132.png', 'foo');
+    grunt.log.muted = true;
+    grunt.config.init();
+    grunt.config('usemin', {
+      js: 'misc.js',
+      options: {
+        replaceAssets: false,
+        assetsDirs: 'images',
+        patterns: {
+          js: [
+            [/referenceToImage = '([^\']+)'/, 'Replacing image']
+          ]
+        }
+      }
+    });
+    grunt.file.copy(path.join(__dirname, 'fixtures/misc.js'), 'misc.js');
+    grunt.task.run('usemin');
+    grunt.task.start();
+
+    var changed = grunt.file.read('misc.js');
+
+    // Check replace has performed its duty
+    assert.ok(changed.match(/referenceToImage = 'image.png'/));
+  });
+
   it('should allow for additional replacement patterns', function () {
     grunt.file.mkdir('images');
     grunt.file.write('images/image.2132.png', 'foo');

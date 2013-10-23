@@ -116,9 +116,16 @@ module.exports = function (grunt) {
       patterns = options.type;
     }
 
+    // Check if we have to replace assets. Defaults to true.
+    var replaceAssets = options.replaceAssets === false ? false : true;
+
     // var locator = options.revmap ? grunt.file.readJSON(options.revmap) : function (p) { return grunt.file.expand({filter: 'isFile'}, p); };
-    var locator = getLocator(grunt, options);
-    var revvedfinder = new RevvedFinder(locator);
+    var revvedfinder = true;
+    if(replaceAssets){
+      var locator = getLocator(grunt, options);
+      revvedfinder = new RevvedFinder(locator);
+    }
+
     var handler = new FileProcessor(patterns, revvedfinder, function (msg) { grunt.log.writeln(msg);});
 
     this.files.forEach(function (fileObj) {
@@ -129,7 +136,7 @@ module.exports = function (grunt) {
         grunt.log.subhead('Processing as ' + options.type.toUpperCase() + ' - ' + filename);
 
         // Our revved version locator
-        var content = handler.process(filename, options.assetsDirs);
+        var content = handler.process(filename, options.assetsDirs, replaceAssets);
 
         // write the new content to disk
         grunt.file.write(filename, content);
